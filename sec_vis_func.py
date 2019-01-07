@@ -1,11 +1,9 @@
 import rhinoscriptsyntax as rs
 
 def Mod_siz():
-
     '''Function to calculate the size of the model via bounding box'''
 
     count = 0
-
     #Select all visible objects
     obj_all = rs.AllObjects(select=True)
 
@@ -14,7 +12,7 @@ def Mod_siz():
     obj_box = rs.BoundingBox(obj_all)
 
     #Print coordinades with tags for visualization purposes
-    #for i, point in enumerate(obj_box):
+    #for i, point in enumerate(obj_box)
     #    rs.AddTextDot(i,point)
 
     #Grab the relevant coordinades from the list only and name them O, X , Y and Z
@@ -23,7 +21,7 @@ def Mod_siz():
 
     for i in ind_rel:
         crd_rel.append(obj_box[i])
-        pnt = rs.AddPoint(obj_box[i])
+        #pnt = rs.AddPoint(obj_box[i])
         if i == 0:
             crd_o = obj_box[i]
         if i == 1:
@@ -40,4 +38,4 @@ def Mod_siz():
     obj_wid = round(rs.Distance(crd_o,crd_x),2)
     obj_dep = round(rs.Distance(crd_o,crd_y),2)
 
-return (obj_wid,obj_dep,obj_hei)
+    return (obj_wid,obj_dep,obj_hei)

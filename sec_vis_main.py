@@ -1,4 +1,4 @@
 import rhinoscriptsyntax as rs
-import sec_vis_functions as fn
+from sec_vis_func import Mod_siz
 
-fn.Mod_siz()
+print('The model is: {}(w) * {}(d) * {}(h).'.format(Mod_siz()[0],Mod_siz()[1],Mod_siz()[2]))
