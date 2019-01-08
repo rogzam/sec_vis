@@ -35,4 +35,28 @@ obj_hei = round(rs.Distance(crd_o,crd_z),2)
 obj_wid = round(rs.Distance(crd_o,crd_x),2)
 obj_dep = round(rs.Distance(crd_o,crd_y),2)
 
-#print('The model is: {}(w) * {}(d) * {}(h).'.format(Mod_siz()[0],Mod_siz()[1],Mod_siz()[2]))
+#Print the bounding box dimensions
+print('The model is: {}(width) * {}(depth) * {}(height)'.format(obj_wid,obj_hei,obj_hei))
+
+#Create a layer to hide the clipping plane
+#rs.AddLayer(name='cli_lay',visible=False)
+
+#Create a clipping plane
+
+
+#rs.ObjectLayer(rs.AllObjects(select=True),layer='cli_lay)
+
+#Ask for the resolution of the section view animation
+vis_res = rs.GetInteger(message='Please insert the resolution for the animation (number of slices)',number=10,minimum=2,maximum=100)
+
+# #Calculate the step value to move the plane
+pla_org = crd_o
+vis_ste = obj_dep/vis_res
+pla_pos = pla_org
+
+for i in range(vis_res):
+    pla_obj = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
+    rs.MoveObject(pla_obj,pla_pos)
+    rs.AddPoint(pla_pos)
+    pla_pos[1] = pla_pos[1] + vis_ste
+    rs.DeleteObject(pla_obj)
