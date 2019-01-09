@@ -51,14 +51,17 @@ print('The model is: {}(width) * {}(depth) * {}(height)'.format(obj_wid,obj_hei,
 #vis_res = rs.GetInteger(message='Please insert the resolution for the animation (number of slices)',number=10,minimum=2,maximum=100)
 vis_res = 15
 
-# #Calculate the step value to move the plane
+#Calculate the step value to move the plane
 pla_org = -crd_o
 vis_ste = obj_dep/vis_res
 pla_org[1] = pla_org[1] + (vis_ste/2)
 pla_pos = pla_org
 
+#Create the start and end points for the section curve
+pnt_ste = (-obj_wid,0,0)
+
 #Center the objects with respect to the camera
-#rs.Command('-_Perspective')
+#4rs.Command('-_Perspective')
 rs.SelectObjects(obj_all)
 rs.ZoomSelected()
 rs.UnselectAllObjects()
@@ -69,8 +72,18 @@ for i in range(img_zoo):
 for i in range(vis_res+2):
     pla_obj = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
     rs.MoveObject(pla_obj,pla_pos)
-    #rs.AddPoint(pla_pos)
+
+    sec_str = pla_pos
+    sec_end = rs.PointAdd(pla_pos,pnt_ste)
     img_des = img_fol + img_pfx + str(i) + '.png'
+
+    rs.SelectObjects(obj_all)
+    rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
+    sec_cur = rs.ObjectsByType(4)
+    rs.SelectObjects(sec_cur)
     rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _TransparentBackground=Yes' + ' _Enter' + ' _Enter')
+    #rs.AddPoint(sec_str)
+    #rs.AddPoint(sec_end)
     pla_pos[1] = pla_pos[1] - vis_ste
-    rs.DeleteObject(pla_obj)
+    rs.DeleteObjects(pla_obj)
+    rs.DeleteObjects(sec_cur)

@@ -25,9 +25,10 @@ for i in ind_rel:
         crd_z = obj_box[i]
     else:
         pass
-rs.Command('-_Top')
 
-pnt_ste = (-20,10,0)
+#rs.Command('-_Top')
+
+pnt_ste = (-20,0,0)
 
 sec_str = crd_x
 sec_end = rs.PointAdd(crd_x,pnt_ste)
@@ -38,6 +39,6 @@ print(sec_end)
 rs.AddPoint(sec_str)
 rs.AddPoint(sec_end)
 
-rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
+#rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
 
-rs.ObjectsByType(4)
+#rs.ObjectsByType(4)
