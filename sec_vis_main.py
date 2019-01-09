@@ -108,30 +108,46 @@ rs.CurrentLayer(layer='Default')
 rs.PurgeLayer('sec_lay')
 rs.PurgeLayer('pla_lay')
 
-# for i in range(vis_res+2):
-#
-#     pla_objt = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
-#     rs.ObjectLayer(pla_objt,'pla_lay')
-#     rs.MoveObject(pla_objt,pla_pos)
-#
-#     sec_str = pla_pos
-#     sec_end = rs.PointAdd(pla_pos,pnt_ste)
-#     rs.CurrentLayer(layer='sec_lay')
-#     rs.SelectObjects(obj_all)
-#
-#     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
-#     sec_cur = rs.ObjectsByType(4)
-#     img_des = img_fol + sec_pfx + str(i) + '.png'
-#     rs.Command('-_Front')
-#     rs.HideObjects(obj_all)
-#     rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
-#     #rs.AddPoint(sec_str)
-#     #rs.AddPoint(sec_end)
-#     pla_pos[1] = pla_pos[1] - vis_ste
-#
-#     rs.ShowObjects(obj_all)
-#     rs.DeleteObjects(pla_obj)
-#     rs.DeleteObjects(sec_cur)
+ces_lay = rs.AddLayer(name='ces_lay',visible=True)
+alp_lay = rs.AddLayer(name='alp_lay',visible=False)
+
+pla_org = -crd_o
+vis_ste = obj_dep/vis_res
+pla_org[1] = pla_org[1] + (vis_ste/2)
+pla_pos = pla_org
+
+rs.CurrentView(view='Front')
+rs.SelectObjects(obj_all)
+rs.ZoomSelected()
+rs.UnselectAllObjects()
+for i in range(img_zoo):
+    rs.Command('Zoom Out')
+
+for i in range(vis_res+2):
+
+    pla_obj = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
+    rs.ObjectLayer(pla_obj,'alp_lay')
+    rs.MoveObject(pla_obj,pla_pos)
+
+    sec_str = pla_pos
+    sec_end = rs.PointAdd(pla_pos,pnt_ste)
+    rs.CurrentLayer(layer='ces_lay')
+    rs.SelectObjects(obj_all)
+    rs.CurrentView('Top')
+    rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
+    img_des = img_fol + sec_pfx + str(i) + '.png'
+    rs.CurrentView('Front')
+    rs.HideObjects(obj_all)
+    rs.UnselectAllObjects()
+    rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
+    #rs.AddPoint(sec_str)
+    #rs.AddPoint(sec_end)
+    pla_pos[1] = pla_pos[1] - vis_ste
+
+    rs.ShowObjects(obj_all)
+    rs.DeleteObjects(pla_obj)
+    sec_cur = rs.ObjectsByType(4)
+    rs.DeleteObjects(sec_cur)
 
 rs.CurrentLayer(layer='Default')
 
