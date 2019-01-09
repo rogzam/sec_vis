@@ -3,18 +3,21 @@ import rhinoscriptsyntax as rs
 #Define the image paremeters
 img_zoo = 5
 img_fol = '/Users/Rog/Desktop/test'
-img_pfx = '/axo/img_'
-sec_pfx = '/sec/sec_'
 img_wid = 1280
 img_hei = 800
 img_sca = 1
 
-#Create a layer for the section curves
+pfx_axo = '/axo/img_'
+pfx_sec = '/sec/sec_'
 
-sec_lay = rs.AddLayer(name='sec_lay',color=(255,255,0),visible=True)
-pla_lay = rs.AddLayer(name='pla_lay',visible=False)
+#Create the layers needed to highlight the section views and hide the clipping plane
+lay_axo_sec = rs.AddLayer(name='lay_axo_sec',color=(255,255,0),visible=True)
+lay_axo_pla = rs.AddLayer(name='lay_axo_pla',visible=False)
+lay_fro_sec = rs.AddLayer(name='lay_fro_sec',visible=True)
+lay_fro_pla = rs.AddLayer(name='lay_fro_pla',visible=False)
 
-rs.LayerPrintColor('sec_lay',color=(255,255,0))
+rs.LayerPrintColor('lay_axo_sec',color=(255,255,0))
+rs.LayerPrintWidth('lay_fro_sec',width=12)
 
 #Select all visible objects
 obj_all = rs.AllObjects(select=True)
@@ -33,7 +36,6 @@ ind_rel = [0,1,3,4]
 
 for i in ind_rel:
     crd_rel.append(obj_box[i])
-    #pnt = rs.AddPoint(obj_box[i])
     if i == 0:
         crd_o = obj_box[i]
     if i == 1:
@@ -53,25 +55,20 @@ obj_dep = round(rs.Distance(crd_o,crd_y),2)
 #Print the bounding box dimensions
 print('The model is: {}(width) * {}(depth) * {}(height)'.format(obj_wid,obj_hei,obj_hei))
 
-#Create a layer to hide the clipping plane
-#rs.AddLayer(name='cli_lay',visible=False)
-
-#Ask for the resolution of the section view animation
+#Ask for the resolution of the section view animation and calculate the step value
 #vis_res = rs.GetInteger(message='Please insert the resolution for the animation (number of slices)',number=10,minimum=2,maximum=100)
 vis_res = 5
-
-#Calculate the step value to move the plane
-pla_org = -crd_o
 vis_ste = obj_dep/vis_res
+
+#Calculate the starting point for the clipping plane
+pla_org = -crd_o
 pla_org[1] = pla_org[1] + (vis_ste/2)
 pla_pos = pla_org
 
-#Create the start and end points for the section curve
+#Transform the width of the object into a 3D point
 pnt_ste = (-obj_wid,0,0)
 
-#Center the objects with respect to the camera
-#rs.Command('-_Perspective')
-
+#Prepare the view for the axonometric view captures
 rs.CurrentView(view='Perspective')
 rs.SelectObjects(obj_all)
 rs.ZoomSelected()
@@ -79,43 +76,43 @@ rs.UnselectAllObjects()
 for i in range(img_zoo):
     rs.Command('Zoom Out')
 
-#Main loop taking the shots on each iteration
+#Main loop taking the axonometry shots on each iteration
 for i in range(vis_res+2):
 
+    #Clipping plane
     pla_obj = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
-    rs.ObjectLayer(pla_obj,'pla_lay')
+    rs.ObjectLayer(pla_obj,'lay_axo_pla')
     rs.MoveObject(pla_obj,pla_pos)
 
+    #Section start and end
     sec_str = pla_pos
     sec_end = rs.PointAdd(pla_pos,pnt_ste)
-    rs.CurrentLayer(layer='sec_lay')
+
+    #Create and select the section curve
+    rs.CurrentLayer(layer='lay_axo_sec')
     rs.SelectObjects(obj_all)
     rs.CurrentView('Top')
     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
     sec_cur = rs.ObjectsByType(4)
-    img_des = img_fol + img_pfx + str(i) + '.png'
-    rs.CurrentView('Perspective')
-    rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
-    #rs.AddPoint(sec_str)
-    #rs.AddPoint(sec_end)
-    pla_pos[1] = pla_pos[1] - vis_ste
 
+    #Take the shot
+    rs.CurrentView('Perspective')
+    img_des = img_fol + pfx_axo + str(i) + '.png'
+    rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
+
+    #Prepare the environment for the next iteration
+    pla_pos[1] = pla_pos[1] - vis_ste
     rs.DeleteObjects(pla_obj)
     rs.DeleteObjects(sec_cur)
 
 rs.CurrentLayer(layer='Default')
 
-rs.PurgeLayer('sec_lay')
-rs.PurgeLayer('pla_lay')
-
-ces_lay = rs.AddLayer(name='ces_lay',visible=True)
-alp_lay = rs.AddLayer(name='alp_lay',visible=False)
-
+#Reset the plane origin coordinates
 pla_org = -crd_o
-vis_ste = obj_dep/vis_res
 pla_org[1] = pla_org[1] + (vis_ste/2)
 pla_pos = pla_org
 
+#Prepare the view for the frontal view captures
 rs.CurrentView(view='Front')
 rs.SelectObjects(obj_all)
 rs.ZoomSelected()
@@ -125,30 +122,43 @@ for i in range(img_zoo):
 
 for i in range(vis_res+2):
 
+    #Clipping plane
     pla_obj = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
-    rs.ObjectLayer(pla_obj,'alp_lay')
+    rs.ObjectLayer(pla_obj,'lay_fro_pla')
     rs.MoveObject(pla_obj,pla_pos)
 
+    #Section start and end points
     sec_str = pla_pos
     sec_end = rs.PointAdd(pla_pos,pnt_ste)
-    rs.CurrentLayer(layer='ces_lay')
+
+    #Create the section view
+    rs.CurrentLayer(layer='lay_fro_sec')
     rs.SelectObjects(obj_all)
     rs.CurrentView('Top')
     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
-    img_des = img_fol + sec_pfx + str(i) + '.png'
+
+    #Prepare the shot
     rs.CurrentView('Front')
     rs.HideObjects(obj_all)
     rs.UnselectAllObjects()
-    rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
-    #rs.AddPoint(sec_str)
-    #rs.AddPoint(sec_end)
-    pla_pos[1] = pla_pos[1] - vis_ste
 
+    #Take the shot
+    img_des = img_fol + pfx_sec + str(i) + '.png'
+    rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
+
+    #Prepare the environment for the next iteration
+    pla_pos[1] = pla_pos[1] - vis_ste
     rs.ShowObjects(obj_all)
     rs.DeleteObjects(pla_obj)
     sec_cur = rs.ObjectsByType(4)
     rs.DeleteObjects(sec_cur)
 
 rs.CurrentLayer(layer='Default')
+
+#Purge the environment
+rs.PurgeLayer('lay_axo_sec')
+rs.PurgeLayer('lay_axo_pla')
+rs.PurgeLayer('lay_fro_sec')
+rs.PurgeLayer('lay_fro_pla')
 
 print ('\n Section views ready! \n')
