@@ -3,14 +3,17 @@ import rhinoscriptsyntax as rs
 #Define the image paremeters
 img_zoo = 5
 img_fol = '/Users/Rog/Desktop/test'
-img_pfx = '/img_'
-img_wid = 1400
-img_hei = 700
-img_sca = 1.2
+img_pfx = '/axo/img_'
+sec_pfx = '/sec/sec_'
+img_wid = 1280
+img_hei = 800
+img_sca = 1
 
 #Create a layer for the section curves
 
 sec_lay = rs.AddLayer(name='sec_lay',color=(255,255,0),visible=True)
+pla_lay = rs.AddLayer(name='pla_lay',visible=False)
+
 rs.LayerPrintColor('sec_lay',color=(255,255,0))
 
 #Select all visible objects
@@ -55,7 +58,7 @@ print('The model is: {}(width) * {}(depth) * {}(height)'.format(obj_wid,obj_hei,
 
 #Ask for the resolution of the section view animation
 #vis_res = rs.GetInteger(message='Please insert the resolution for the animation (number of slices)',number=10,minimum=2,maximum=100)
-vis_res = 20
+vis_res = 5
 
 #Calculate the step value to move the plane
 pla_org = -crd_o
@@ -67,7 +70,9 @@ pla_pos = pla_org
 pnt_ste = (-obj_wid,0,0)
 
 #Center the objects with respect to the camera
-#4rs.Command('-_Perspective')
+#rs.Command('-_Perspective')
+
+rs.CurrentView(view='Perspective')
 rs.SelectObjects(obj_all)
 rs.ZoomSelected()
 rs.UnselectAllObjects()
@@ -78,25 +83,56 @@ for i in range(img_zoo):
 for i in range(vis_res+2):
 
     pla_obj = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
+    rs.ObjectLayer(pla_obj,'pla_lay')
     rs.MoveObject(pla_obj,pla_pos)
 
     sec_str = pla_pos
     sec_end = rs.PointAdd(pla_pos,pnt_ste)
     rs.CurrentLayer(layer='sec_lay')
     rs.SelectObjects(obj_all)
-
+    rs.CurrentView('Top')
     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
     sec_cur = rs.ObjectsByType(4)
     img_des = img_fol + img_pfx + str(i) + '.png'
+    rs.CurrentView('Perspective')
     rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
     #rs.AddPoint(sec_str)
     #rs.AddPoint(sec_end)
-
     pla_pos[1] = pla_pos[1] - vis_ste
 
     rs.DeleteObjects(pla_obj)
     rs.DeleteObjects(sec_cur)
 
-rs.CurrentLayer(layer='default')
-rs.DeleteLayer(sec_lay)
-print ('Section views ready!')
+rs.CurrentLayer(layer='Default')
+
+rs.PurgeLayer('sec_lay')
+rs.PurgeLayer('pla_lay')
+
+# for i in range(vis_res+2):
+#
+#     pla_objt = rs.AddClippingPlane(rs.WorldZXPlane(),50,50,views='Perspective')
+#     rs.ObjectLayer(pla_objt,'pla_lay')
+#     rs.MoveObject(pla_objt,pla_pos)
+#
+#     sec_str = pla_pos
+#     sec_end = rs.PointAdd(pla_pos,pnt_ste)
+#     rs.CurrentLayer(layer='sec_lay')
+#     rs.SelectObjects(obj_all)
+#
+#     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
+#     sec_cur = rs.ObjectsByType(4)
+#     img_des = img_fol + sec_pfx + str(i) + '.png'
+#     rs.Command('-_Front')
+#     rs.HideObjects(obj_all)
+#     rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
+#     #rs.AddPoint(sec_str)
+#     #rs.AddPoint(sec_end)
+#     pla_pos[1] = pla_pos[1] - vis_ste
+#
+#     rs.ShowObjects(obj_all)
+#     rs.DeleteObjects(pla_obj)
+#     rs.DeleteObjects(sec_cur)
+
+rs.CurrentLayer(layer='Default')
+
+print ('\n Section views ready! \n')
