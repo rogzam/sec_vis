@@ -10,27 +10,34 @@ img_sca = 1
 pfx_axo = '/axo/img_'
 pfx_sec = '/sec/sec_'
 
-#Create a working layer
+#Create a working layer and save the active layer
 lay_wor = rs.AddLayer(name='lay_wor',visible=True)
+lay_act = rs.CurrentLayer()
 rs.CurrentLayer(lay_wor)
 
 #Select object to be sliced, copy it, group it and move it to the working layer
-obj_sel = rs.GetObjects(message='Select the objects to be visualized:', group=True)
-obj_cop = rs.CopyObject(obj_sel)
+obj_sel = rs.GetObjects(message='Select the objects to be visualized:', group=True,preselect=True)
+obj_cop = rs.CopyObjects(obj_sel)
 
 rs.AddGroup(group_name='obj_all')
-rs.AddObjectToGroup(obj_cop,'obj_all')
+
+for i in obj_cop:
+    rs.AddObjectToGroup(i,'obj_all')
 
 obj_all = rs.ObjectsByGroup('obj_all')
 rs.ObjectLayer(obj_all,'lay_wor')
 
-#Turn off all layers but the working one
+#Turn off all layers but the working one, also save a list of visible layers
 lay_lis = rs.LayerNames()
+
+lay_vis = []
 
 for i in range(len(lay_lis)):
     if lay_lis[i] == 'lay_wor':
         rs.LayerVisible(lay_lis[i],visible=True)
     else:
+        if rs.IsLayerVisible(lay_lis[i]):
+            lay_vis.append(lay_lis[i])
         rs.LayerVisible(lay_lis[i],visible=False)
 
 #Create the layers needed to highlight the section views and hide the clipping plane
@@ -40,10 +47,9 @@ lay_fro_sec = rs.AddLayer(name='lay_fro_sec',visible=True)
 lay_fro_pla = rs.AddLayer(name='lay_fro_pla',visible=False)
 
 rs.LayerPrintColor('lay_axo_sec',color=(255,255,0))
-rs.LayerPrintWidth('lay_fro_sec')
 
 #Change the main object name and create a list of the points for the bounding box to be used to align with origin
-rs.ObjectName(obj_all,'obj_main')
+rs.ObjectName(obj_all,'obj_all')
 obj_cen = rs.BoundingBox(obj_all,view_or_plane='Perspective')
 
 #Move selection to the origin of the working plane
@@ -98,7 +104,7 @@ pnt_ste = (-obj_wid,0,0)
 
 #Prepare the view for the axonometric view captures
 rs.CurrentView(view='Perspective')
-rs.ObjectsByName('obj_main',select=True)
+rs.ObjectsByGroup('obj_all',select=True)
 rs.ZoomSelected()
 rs.UnselectAllObjects()
 for i in range(img_zoo):
@@ -116,9 +122,12 @@ for i in range(vis_res+2):
     sec_str = pla_pos
     sec_end = rs.PointAdd(pla_pos,pnt_ste)
 
+    # rs.AddPoint(sec_str)
+    # rs.AddPoint(sec_end)
+
     #Create and select the section curve
     rs.CurrentLayer(layer='lay_axo_sec')
-    rs.ObjectsByName('obj_main',select=True)
+    rs.ObjectsByGroup('obj_all',select=True)
     rs.CurrentView('Top')
     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
     sec_cur = rs.ObjectsByType(4)
@@ -142,7 +151,7 @@ pla_pos = pla_org
 
 #Prepare the view for the frontal view captures
 rs.CurrentView(view='Front')
-rs.ObjectsByName('obj_main',select=True)
+rs.ObjectsByGroup('obj_all',select=True)
 rs.ZoomSelected()
 rs.UnselectAllObjects()
 for i in range(img_zoo):
@@ -161,7 +170,7 @@ for i in range(vis_res+2):
 
     #Create the section view
     rs.CurrentLayer(layer='lay_fro_sec')
-    rs.SelectObjects(obj_all)
+    rs.ObjectsByGroup('obj_all',select=True)
     rs.CurrentView('Top')
     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
 
@@ -187,11 +196,19 @@ else:
     rs.AddLayer(name='Default')
     rs.CurrentLayer(layer='Default')
 
+#Leave the rest of the layers as they were at start
+rs.CurrentLayer(lay_act)
+
+for i in lay_vis:
+    rs.LayerVisible(i,visible=True)
+
 #Purge the environment
 rs.PurgeLayer('lay_axo_sec')
 rs.PurgeLayer('lay_axo_pla')
 rs.PurgeLayer('lay_fro_sec')
 rs.PurgeLayer('lay_fro_pla')
 rs.PurgeLayer('lay_wor')
+
+
 
 print ('\n Section views ready! \n')
