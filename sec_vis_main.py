@@ -1,15 +1,19 @@
 import rhinoscriptsyntax as rs
 import os
-from sec_vis_functions import GetFolder
+from sec_vis_scripts import *
 
-#Define the image paremeters
+#Define directory and naming parameters
+dir_mai = '/sec_vis'
+dir_axo = '/axo'
+dir_sec = '/sec'
+pfx_axo = '/axo_'
+pfx_sec = '/sec_'
+
+#Define the image parameters
 img_zoo = 5
 img_wid = 1280
 img_hei = 800
 img_sca = 1
-
-pfx_axo = '/axo/img_'
-pfx_sec = '/sec/sec_'
 
 #Create a working layer and save the active layer
 lay_wor = rs.AddLayer(name='lay_wor',visible=True)
@@ -19,13 +23,7 @@ rs.CurrentLayer(lay_wor)
 #Select object to be sliced, copy it, group it and move it to the working layer
 obj_sel = rs.GetObjects(message='Select the objects to be visualized:', group=True,preselect=True)
 dir_tar = GetFolder(message='Please select the target directory')
-
-os.mkdir(dir_tal+'/sec_vis')
-os.mkdir(dir_tal+'/sec_vis/axo')
-os.mkdir(dir_tal+'/sec_vis/sec')
-
 obj_cop = rs.CopyObjects(obj_sel)
-
 rs.AddGroup(group_name='obj_all')
 
 for i in obj_cop:
@@ -34,9 +32,19 @@ for i in obj_cop:
 obj_all = rs.ObjectsByGroup('obj_all')
 rs.ObjectLayer(obj_all,'lay_wor')
 
+#Create the directories needed to store all captures
+if os.path.isdir(dir_tar+dir_mai) == True:
+    #print('Directories already exists')
+    pass
+else:
+    os.mkdir(dir_tar + dir_mai)
+    os.mkdir(dir_tar + dir_mai + dir_axo)
+    os.mkdir(dir_tar + dir_mai + dir_sec)
+    #print('Directories created')
+    pass
+
 #Turn off all layers but the working one, also save a list of visible layers
 lay_lis = rs.LayerNames()
-
 lay_vis = []
 
 for i in range(len(lay_lis)):
@@ -141,7 +149,7 @@ for i in range(vis_res+2):
 
     #Take the shot
     rs.CurrentView('Perspective')
-    img_des = img_fol + pfx_axo + str(i) + '.png'
+    img_des = dir_tar + dir_mai + dir_axo + pfx_axo + str(i) + '.png'
     rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
 
     #Prepare the environment for the next iteration
@@ -187,7 +195,7 @@ for i in range(vis_res+2):
     rs.UnselectAllObjects()
 
     #Take the shot
-    img_des = img_fol + pfx_sec + str(i) + '.png'
+    img_des = dir_tar + dir_mai + dir_sec + pfx_sec + str(i) + '.png'
     rs.Command('-_ViewCaptureToFile ' + img_des + ' _DrawGrid=No' + ' _Width=' + str(img_wid) + ' _Height=' + str(img_hei) + ' _Scale=' + str(img_sca) + ' _TransparentBackground=No' + ' _Enter' + ' _Enter')
 
     #Prepare the environment for the next iteration
@@ -215,7 +223,5 @@ rs.PurgeLayer('lay_axo_pla')
 rs.PurgeLayer('lay_fro_sec')
 rs.PurgeLayer('lay_fro_pla')
 rs.PurgeLayer('lay_wor')
-
-
 
 print ('\n Section views ready! \n')

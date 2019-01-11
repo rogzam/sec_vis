@@ -21,5 +21,3 @@ def GetFolder(folder=None, message=None, title=None):
     if dlg.ShowDialog()==System.Windows.Forms.DialogResult.OK:
         return dlg.SelectedPath
     return dlg.SelectedPath
-
-print(Browse())
