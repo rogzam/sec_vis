@@ -1,6 +1,6 @@
 import rhinoscriptsyntax as rs
+from slicer_functions import *
 import os
-from sec_vis_scripts import *
 
 #Define directory and naming parameters
 dir_mai = '/sec_vis'
@@ -22,6 +22,7 @@ rs.CurrentLayer(lay_wor)
 
 #Select object to be sliced, copy it, group it and move it to the working layer
 obj_sel = rs.GetObjects(message='Select the objects to be visualized:', group=True,preselect=True)
+#dir_tar = "/Users/Rog/Desktop"
 dir_tar = GetFolder(message='Please select the target directory')
 obj_cop = rs.CopyObjects(obj_sel)
 rs.AddGroup(group_name='obj_all')
@@ -60,6 +61,7 @@ lay_axo_sec = rs.AddLayer(name='lay_axo_sec',color=(255,255,0),visible=True)
 lay_axo_pla = rs.AddLayer(name='lay_axo_pla',visible=False)
 lay_fro_sec = rs.AddLayer(name='lay_fro_sec',visible=True)
 lay_fro_pla = rs.AddLayer(name='lay_fro_pla',visible=False)
+#lay_tag = rs.AddLayer(name='lay_tag',visible=True)
 
 rs.LayerPrintColor('lay_axo_sec',color=(255,255,0))
 
@@ -101,12 +103,33 @@ obj_hei = round(rs.Distance(crd_o,crd_z),2)
 obj_wid = round(rs.Distance(crd_o,crd_x),2)
 obj_dep = round(rs.Distance(crd_o,crd_y),2)
 
+# #Print coordinades with tags for visualization purposes
+# rs.CurrentLayer(lay_tag)
+# crd_tag = ['O','X','Y','Z']
+#
+# for i in obj_box:
+#     if i == obj_box[0]:
+#         rs.AddTextDot(crd_tag[0],i)
+#     # if i == obj_box[1]:
+#     #     rs.AddTextDot(crd_tag[1],i)
+#     if i == obj_box[3]:
+#         rs.AddTextDot(crd_tag[2],i)
+#     # if i == obj_box[4]:
+#     #     rs.AddTextDot(crd_tag[3],i)
+#
+# #Select the slicing direction
+# sli_dir = ['O -> Y', 'Y -> O']
+# sli_sel = rs.ListBox(sli_dir, message='Select the slicing direction:',title='Direction')
+#
+# rs.CurrentLayer(lay_wor)
+# rs.PurgeLayer(lay_tag)
+
 #Print the bounding box dimensions
 print('The model is: {}(width) * {}(height) * {}(depth)'.format(obj_wid,obj_hei,obj_dep))
 
 #Ask for the resolution of the section view animation and calculate the step value
-#vis_res = rs.GetInteger(message='Please insert the resolution for the animation (number of slices)',number=10,minimum=2,maximum=100)
-vis_res = 5
+vis_res = rs.GetInteger(message='Please insert the resolution for the animation (number of slices)',number=10,minimum=2,maximum=100)
+#vis_res = 5
 vis_ste = obj_dep/vis_res
 
 #Calculate the starting point for the clipping plane
@@ -137,8 +160,6 @@ for i in range(vis_res+2):
     sec_str = pla_pos
     sec_end = rs.PointAdd(pla_pos,pnt_ste)
 
-    # rs.AddPoint(sec_str)
-    # rs.AddPoint(sec_end)
 
     #Create and select the section curve
     rs.CurrentLayer(layer='lay_axo_sec')
@@ -213,7 +234,6 @@ else:
 
 #Leave the rest of the layers as they were at start
 rs.CurrentLayer(lay_act)
-
 for i in lay_vis:
     rs.LayerVisible(i,visible=True)
 
