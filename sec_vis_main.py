@@ -1,8 +1,9 @@
 import rhinoscriptsyntax as rs
+import os
+from sec_vis_functions import GetFolder
 
 #Define the image paremeters
 img_zoo = 5
-img_fol = '/Users/Rog/Desktop/test'
 img_wid = 1280
 img_hei = 800
 img_sca = 1
@@ -17,6 +18,12 @@ rs.CurrentLayer(lay_wor)
 
 #Select object to be sliced, copy it, group it and move it to the working layer
 obj_sel = rs.GetObjects(message='Select the objects to be visualized:', group=True,preselect=True)
+dir_tar = GetFolder(message='Please select the target directory')
+
+os.mkdir(dir_tal+'/sec_vis')
+os.mkdir(dir_tal+'/sec_vis/axo')
+os.mkdir(dir_tal+'/sec_vis/sec')
+
 obj_cop = rs.CopyObjects(obj_sel)
 
 rs.AddGroup(group_name='obj_all')
