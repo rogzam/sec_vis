@@ -1,6 +1,7 @@
 import rhinoscriptsyntax as rs
-from slicer_functions import *
+import System.Windows.Forms
 import os
+from sec_vis_slicer_functions import *
 
 #Define directory and naming parameters
 dir_mai = '/sec_vis'
@@ -15,6 +16,9 @@ img_wid = 1280
 img_hei = 800
 img_sca = 1
 
+#Initialize the dialogue box
+dlg = System.Windows.Forms.FolderBrowserDialog()
+
 #Create a working layer and save the active layer
 lay_wor = rs.AddLayer(name='lay_wor',visible=True)
 lay_act = rs.CurrentLayer()
@@ -23,7 +27,9 @@ rs.CurrentLayer(lay_wor)
 #Select object to be sliced, copy it, group it and move it to the working layer
 obj_sel = rs.GetObjects(message='Select the objects to be visualized:', group=True,preselect=True)
 #dir_tar = "/Users/Rog/Desktop"
-dir_tar = GetFolder(message='Please select the target directory')
+dlg.ShowDialog()
+dir_tar = dlg.SelectedPath
+
 obj_cop = rs.CopyObjects(obj_sel)
 rs.AddGroup(group_name='obj_all')
 
@@ -211,6 +217,7 @@ for i in range(vis_res+2):
     rs.Command('-_Section ' + str(sec_str) + ' ' + str(sec_end) + ' _Enter')
 
     #Prepare the shot
+    rs.CurrentView('Back')
     rs.CurrentView('Front')
     rs.HideObjects(obj_all)
     rs.UnselectAllObjects()
