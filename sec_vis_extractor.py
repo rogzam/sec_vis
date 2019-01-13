@@ -14,7 +14,7 @@ pfx_sec = '/sec_'
 img_zoo = 5
 img_wid = 1280
 img_hei = 800
-img_sca = 1
+img_sca = 2
 
 #Initialize the dialogue box
 dlg = System.Windows.Forms.FolderBrowserDialog()
