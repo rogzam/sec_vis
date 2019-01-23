@@ -1,7 +1,6 @@
 import rhinoscriptsyntax as rs
 import System.Windows.Forms
 import os
-from sec_vis_slicer_functions import *
 
 #Define directory and naming parameters
 dir_mai = '/sec_vis'
